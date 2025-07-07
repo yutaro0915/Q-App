@@ -64,7 +64,7 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   });
 });
 
-const PORT = config.port;
+const PORT = process.env.PORT || 8005;
 
 app.listen(PORT, () => {
   console.log(`🚀 Q-App Backend Server running on port ${PORT}`);
