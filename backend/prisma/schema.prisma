@@ -11,25 +11,25 @@ datasource db {
 }
 
 enum Faculty {
-  文学部
-  教育学部
-  法学部
-  経済学部
-  理学部
-  医学部
-  歯学部
-  薬学部
-  工学部
-  芸術工学部
-  農学部
-  共創学部
+  LITERATURE
+  EDUCATION
+  LAW
+  ECONOMICS
+  SCIENCE
+  MEDICINE
+  DENTISTRY
+  PHARMACY
+  ENGINEERING
+  DESIGN
+  AGRICULTURE
+  COCREATION
 }
 
 enum PostCategory {
-  授業
-  アルバイト
-  サークル
-  雑談
+  CLASS
+  PART_TIME
+  CLUB
+  CHAT
 }
 
 model User {
