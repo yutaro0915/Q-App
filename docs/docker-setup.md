@@ -6,7 +6,7 @@
 ```
 docker-compose.yml
 ├── frontend (Vue.js)
-├── backend (FastAPI)
+├── backend (Express.js)
 ├── database (MySQL)
 ├── redis (キャッシュ)
 └── nginx (リバースプロキシ)
@@ -16,7 +16,7 @@ docker-compose.yml
 ```
 AWS ECS Cluster
 ├── frontend-service (Vue.js build + Nginx)
-├── backend-service (FastAPI)
+├── backend-service (Express.js)
 ├── RDS MySQL (外部)
 └── ElastiCache Redis (外部)
 ```
@@ -62,7 +62,7 @@ services:
     depends_on:
       - database
       - redis
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    command: npm run dev
 
   database:
     image: mysql:8.0
@@ -144,75 +144,66 @@ CMD ["nginx", "-g", "daemon off;"]
 
 ### Backend Dockerfile.dev
 ```dockerfile
-FROM python:3.11-slim
+FROM node:18-alpine
 
 WORKDIR /app
 
-# システムの依存関係をインストール
-RUN apt-get update && apt-get install -y \
-    gcc \
-    default-libmysqlclient-dev \
-    pkg-config \
-    && rm -rf /var/lib/apt/lists/*
-
-# Poetry をインストール
-RUN pip install poetry
-
-# Poetry の設定
-RUN poetry config virtualenvs.create false
-
-# 依存関係ファイルをコピー
-COPY pyproject.toml poetry.lock ./
+# package.json と package-lock.json をコピー
+COPY package*.json ./
 
 # 依存関係をインストール
-RUN poetry install --no-dev
+RUN npm ci
 
 # アプリケーションコードをコピー
 COPY . .
 
+# TypeScript をグローバルにインストール
+RUN npm install -g typescript ts-node nodemon
+
 EXPOSE 8000
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["npm", "run", "dev"]
 ```
 
 ### Backend Dockerfile (本番用)
 ```dockerfile
-FROM python:3.11-slim
+FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# システムの依存関係をインストール
-RUN apt-get update && apt-get install -y \
-    gcc \
-    default-libmysqlclient-dev \
-    pkg-config \
-    && rm -rf /var/lib/apt/lists/*
-
-# Poetry をインストール
-RUN pip install poetry
-
-# Poetry の設定
-RUN poetry config virtualenvs.create false
-
-# 依存関係ファイルをコピー
-COPY pyproject.toml poetry.lock ./
+# package.json と package-lock.json をコピー
+COPY package*.json ./
 
 # 依存関係をインストール
-RUN poetry install --no-dev
+RUN npm ci
 
 # アプリケーションコードをコピー
 COPY . .
 
+# TypeScript をビルド
+RUN npm run build
+
+# Production stage
+FROM node:18-alpine
+
+WORKDIR /app
+
+# 本番用の依存関係のみインストール
+COPY package*.json ./
+RUN npm ci --only=production && npm cache clean --force
+
+# ビルド済みファイルをコピー
+COPY --from=builder /app/dist ./dist
+
 # 本番用のユーザーを作成
-RUN addgroup --system --gid 1001 fastapi && \
-    adduser --system --uid 1001 --gid 1001 fastapi
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
 
 # アプリケーションファイルの所有者を変更
-RUN chown -R fastapi:fastapi /app
-
-USER fastapi
+RUN chown -R nodejs:nodejs /app
+USER nodejs
 
 EXPOSE 8000
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+CMD ["node", "dist/index.js"]
 ```
 
 ### nginx/nginx.conf

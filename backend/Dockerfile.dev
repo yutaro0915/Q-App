@@ -1,0 +1,18 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# package.json と package-lock.json をコピー
+COPY package*.json ./
+
+# 依存関係をインストール
+RUN npm ci
+
+# アプリケーションコードをコピー
+COPY . .
+
+# TypeScript をグローバルにインストール
+RUN npm install -g typescript ts-node nodemon
+
+EXPOSE 8000
+CMD ["npm", "run", "dev"]

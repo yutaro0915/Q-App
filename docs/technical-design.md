@@ -5,7 +5,7 @@
 ### 全体構成
 ```
 [フロントエンド]     [バックエンド]      [データベース]
-Vue.js 3.x    <--> FastAPI        <--> MySQL 8.0
+Vue.js 3.x    <--> Express.js     <--> MySQL 8.0
 (SPA)              (RESTful API)       (RDS)
   |                     |                 |
   |                     |                 |
@@ -19,8 +19,8 @@ Vue.js 3.x    <--> FastAPI        <--> MySQL 8.0
 - **状態管理**: Pinia
 - **ルーティング**: Vue Router 4
 - **HTTP クライアント**: Axios
-- **バックエンド**: FastAPI + Python 3.11
-- **ORM**: SQLAlchemy 2.0
+- **バックエンド**: Express.js + Node.js 18.x + TypeScript
+- **ORM**: Prisma
 - **認証**: JWT (JSON Web Token)
 - **データベース**: MySQL 8.0
 - **ファイルストレージ**: AWS S3
@@ -540,7 +540,7 @@ export const useEventsStore = defineStore('events', {
 
 ### セキュリティ対策
 - CORS 設定
-- SQL インジェクション対策 (SQLAlchemy ORM)
+- SQL インジェクション対策 (Prisma ORM)
 - XSS 対策 (入力値エスケープ)
 - CSRF 対策 (SameSite Cookie)
 - レート制限 (API 呼び出し制限)
@@ -563,10 +563,11 @@ Frontend:
 - npm / yarn
 
 Backend:
-- Python 3.11
-- FastAPI
-- uvicorn (開発サーバー)
-- Poetry (依存関係管理)
+- Node.js 18.x
+- Express.js + TypeScript
+- nodemon (開発サーバー)
+- npm / yarn (依存関係管理)
+- Prisma (ORM)
 
 Database:
 - MySQL 8.0 (Docker)

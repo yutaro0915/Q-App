@@ -87,7 +87,7 @@
 
 ### 開発スタック
 - **フロントエンド**: Vue.js
-- **バックエンド**: FastAPI (Python)
+- **バックエンド**: Express.js (Node.js + TypeScript)
 - **データベース**: MySQL
 - **ホスティング**: AWS
 
